@@ -58,7 +58,7 @@ const spawnRandomTile = (board: BoardState) => {
   return boardCopy;
 };
 
-const reversedViewOf = <T,>(array: T[]) => {
+const reversedViewOf = <T,>(array: T[]): T[] => {
   return Object.defineProperties(
     Object.create(array),
     [...array.keys()].map((index) => ({
@@ -70,23 +70,24 @@ const reversedViewOf = <T,>(array: T[]) => {
       },
       wrtiable: true,
     })) as unknown as PropertyDescriptorMap
-  );
+  ) as T[];
 };
 
 const columnViewsOf = <T,>(array: T[][]): T[][] => {
-  return [...array.keys()].map((columnIndex: number) =>
-    Object.defineProperties(
-      Object.create(array),
-      [...array.keys()].map((index) => ({
-        get() {
-          return array[index]![columnIndex];
-        },
-        set(value: T) {
-          array[index]![columnIndex] = value;
-        },
-        wrtiable: true,
-      })) as unknown as PropertyDescriptorMap
-    )
+  return [...array.keys()].map(
+    (columnIndex: number): T[] =>
+      Object.defineProperties(
+        Object.create(array),
+        [...array.keys()].map((index) => ({
+          get() {
+            return array[index]![columnIndex];
+          },
+          set(value: T) {
+            array[index]![columnIndex] = value;
+          },
+          wrtiable: true,
+        })) as unknown as PropertyDescriptorMap
+      ) as T[]
   );
 };
 
@@ -172,9 +173,9 @@ const Tile = ({
     <div
       className={`absolute ${
         pop ? "animate-pop" : "animate-fade-in"
-      } flex items-center justify-center rounded-md text-white shadow-tile transition-[left,top] duration-200 ${
-        tileColors[value - 1]
-      }`}
+      } flex items-center justify-center rounded-md text-white shadow-tile transition-[left,top] duration-200 ${tileColors[
+        value - 1
+      ]!}`}
       style={{
         width: `calc((100% - 5 * var(--grid-spacing)) / 4)`,
         height: `calc((100% - 5 * var(--grid-spacing)) / 4)`,
@@ -202,9 +203,9 @@ const Empty = ({ x, y }: { x: number; y: number }) => {
 };
 
 const saveScore = (score: GameResult) => {
-  const scores: GameResult[] = JSON.parse(
+  const scores = JSON.parse(
     localStorage.getItem("scores") ?? "[]"
-  );
+  ) as GameResult[];
   scores.push(score);
   localStorage.setItem("scores", JSON.stringify(scores));
 };
@@ -353,7 +354,7 @@ export const Board = ({
     <div className="relative col-span-2 row-start-1 aspect-square w-full max-w-xl rounded-md bg-slate-500 lg:col-span-1 lg:row-auto ">
       {children}
       {allPositions.map((position) => (
-        <Empty {...position} />
+        <Empty {...position} key={position.key} />
       ))}
       {[...getTiles(board)]
         // sorting ensures that tiles are always rendered in the same order
@@ -380,7 +381,10 @@ const useArrows = (arrows: { [eventName: string]: () => void }) => {
   }, []);
 };
 
-const doSetBoard = (setBoard: any, doit: any) => {
+const doSetBoard = (
+  setBoard: (reducer: (board: BoardState) => BoardState) => void,
+  doit: (state: BoardState) => boolean
+) => {
   setBoard((board: BoardState) => {
     const newBoard = copyBoard(board);
     newBoard.dirty = doit(newBoard);
@@ -405,7 +409,7 @@ const Play: NextPage = () => {
           onClick={() => setGameKey((key) => !key)}
           className="mt-[var(--grid-spacing)] block flex h-12 w-full items-center justify-center gap-4 rounded-xl bg-indigo-800 text-white shadow-button hover:bg-indigo-900 tablet:h-16 sm:text-3xl lg:w-48"
         >
-          <Image src={resetIcon} alt="reset" />
+          <Image src={resetIcon as string} alt="reset" />
           Reset
         </button>
         <Game key={+gameKey} />

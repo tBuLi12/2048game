@@ -1,6 +1,6 @@
-import { NextPage } from "next";
-import { useEffect, useMemo, useState } from "react";
-import { BoardState, Board, Game, getTiles } from "./play";
+import type { NextPage } from "next";
+import { useEffect, useState } from "react";
+import { type BoardState, Board, getTiles } from "./play";
 
 export interface GameResult {
   board: BoardState;
@@ -31,7 +31,9 @@ const Scores: NextPage = () => {
   useEffect(
     () =>
       setScores(
-        calculateScores(JSON.parse(localStorage.getItem("scores") ?? "[]"))
+        calculateScores(
+          JSON.parse(localStorage.getItem("scores") ?? "[]") as GameResult[]
+        )
       ),
     []
   );
