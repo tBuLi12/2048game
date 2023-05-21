@@ -335,7 +335,7 @@ export const Game = () => {
       <Board board={board}>
         {(victory || loss) && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-[rgba(0,0,0,0.5)] text-5xl text-white ">
-            {victory ? "Game Over" : "You Win!"}
+            {victory ? "You Win!" : "Game Over"}
           </div>
         )}
       </Board>
