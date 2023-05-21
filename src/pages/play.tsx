@@ -167,7 +167,7 @@ const Tile = ({
   y,
   value,
   pop,
-}: TileProperties & { x: number; y: number }) => {
+}: Omit<TileProperties, "tileOnTop"> & { x: number; y: number }) => {
   return (
     <div
       className={`absolute ${
