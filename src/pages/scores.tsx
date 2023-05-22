@@ -30,7 +30,9 @@ const Scores: NextPage = () => {
   useEffect(
     () =>
       setScores(
-        JSON.parse(localStorage.getItem("scores") ?? "[]").map(withScore)
+        (
+          JSON.parse(localStorage.getItem("scores") ?? "[]") as GameResult[]
+        ).map(withScore)
       ),
     []
   );

@@ -1,5 +1,4 @@
 import { type NextPage } from "next";
-import Head from "next/head";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -134,7 +133,7 @@ export const Board = ({
         // otherwise CSS transition do not work properly
         .sort(({ key }, { key: other }) => key - other)
         .map((props) => (
-          <Tile {...props} />
+          <Tile {...props} key={props.key} />
         ))}
     </div>
   );
