@@ -16,6 +16,9 @@ export default {
       screens: {
         tablet: "450px",
       },
+      spacing: {
+        tile: "calc((100% - 5 * var(--grid-spacing)) / 4)",
+      },
     },
   },
   plugins: [],

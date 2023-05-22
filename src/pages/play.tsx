@@ -10,7 +10,7 @@ interface TileProperties {
   value: number;
   key: number;
   tileOnTop: TileProperties | null;
-  pop?: boolean;
+  wasMerged?: boolean;
 }
 
 export type BoardState = (TileProperties | null)[][] & {
@@ -46,9 +46,7 @@ const Play: NextPage = () => {
 export const Game = () => {
   const lastTouchedPoint = useRef<{ x: number; y: number } | null>(null);
 
-  const [board, applyMove] = useBoard(
-    (): BoardState => emptyBoard.map((row) => [...row])
-  );
+  const [board, applyMove] = useBoard(getEmptyBoard);
 
   const arrows = useMemo(
     () => ({
@@ -153,24 +151,25 @@ const tileColors = [
   "bg-amber-500", // 2048
 ];
 
+const getOffsetStyle = (index: number) =>
+  `calc(var(--grid-spacing) + ${index} * (100% - var(--grid-spacing)) / 4)`;
+
 const Tile = ({
   x,
   y,
   value,
-  pop,
+  wasMerged: pop,
 }: Omit<TileProperties, "tileOnTop"> & { x: number; y: number }) => {
   return (
     <div
       className={`absolute ${
         pop ? "animate-pop" : "animate-fade-in"
-      } flex items-center justify-center rounded-md shadow-tile transition-[left,top] duration-200 ${tileColors[
+      } flex h-tile w-tile items-center justify-center rounded-md shadow-tile transition-[left,top] duration-200 ${tileColors[
         value - 1
       ]!}`}
       style={{
-        width: `calc((100% - 5 * var(--grid-spacing)) / 4)`,
-        height: `calc((100% - 5 * var(--grid-spacing)) / 4)`,
-        left: `calc(var(--grid-spacing) + ${x} * (100% - var(--grid-spacing)) / 4)`,
-        top: `calc(var(--grid-spacing) + ${y} * (100% - var(--grid-spacing)) / 4)`,
+        left: getOffsetStyle(x),
+        top: getOffsetStyle(y),
       }}
     >
       {2 ** value}
@@ -181,12 +180,10 @@ const Tile = ({
 const Empty = ({ x, y }: { x: number; y: number }) => {
   return (
     <div
-      className="absolute rounded-md bg-slate-400 shadow-empty"
+      className="absolute h-tile w-tile rounded-md bg-slate-400 shadow-empty"
       style={{
-        width: `calc((100% - 5 * var(--grid-spacing)) / 4)`,
-        height: `calc((100% - 5 * var(--grid-spacing)) / 4)`,
-        left: `calc(var(--grid-spacing) + ${x} * (100% - var(--grid-spacing)) / 4)`,
-        top: `calc(var(--grid-spacing) + ${y} * (100% - var(--grid-spacing)) / 4)`,
+        left: getOffsetStyle(x),
+        top: getOffsetStyle(y),
       }}
     ></div>
   );
@@ -210,7 +207,9 @@ const useBoard = (
     setBoard(
       (board) =>
         (currentBoard.current = initialBoard =
-          getTiles(board).next().done ? spawnRandomTile(board) : board)
+          getTiles(board).next().done
+            ? spawnRandomTile(spawnRandomTile(board))
+            : board)
     );
 
     return () => {
@@ -280,7 +279,6 @@ export function* getTiles(board: BoardState) {
 }
 
 let id = 0;
-
 const spawnRandomTile = (board: BoardState) => {
   const freeTiles = [...getFreeTiles(board)];
   const { x, y } = freeTiles[Math.floor(Math.random() * freeTiles.length)]!;
@@ -290,9 +288,7 @@ const spawnRandomTile = (board: BoardState) => {
     tileOnTop: null,
   };
 
-  const boardCopy = board.map((row) =>
-    row.map((tile) => (tile ? ({ ...tile } as TileProperties) : null))
-  );
+  const boardCopy = copyBoard(board);
   boardCopy[y]![x] = newTile;
   return boardCopy;
 };
@@ -302,7 +298,7 @@ const copyBoard = (board: BoardState): BoardState =>
     row.map((tile) => (tile ? ({ ...tile } as TileProperties) : null))
   );
 
-const emptyBoard = [
+const getEmptyBoard = () => [
   [null, null, null, null],
   [null, null, null, null],
   [null, null, null, null],
@@ -321,9 +317,12 @@ const or = (a: boolean, b: boolean) => a || b;
 
 const tryUp = (board: BoardState) =>
   columnViewsOf(board).map(tryMoveTiles).reduce(or);
+
 const tryLeft = (board: BoardState) => board.map(tryMoveTiles).reduce(or);
+
 const tryRight = (board: BoardState) =>
   board.map(reversedViewOf).map(tryMoveTiles).reduce(or);
+
 const tryDown = (board: BoardState) =>
   columnViewsOf(board).map(reversedViewOf).map(tryMoveTiles).reduce(or);
 
@@ -403,19 +402,17 @@ const columnViewsOf = <T,>(array: T[][]): T[][] => {
   );
 };
 
+const togglePopKey = (key: number) => (key % 1 == 0 ? key + 0.5 : key - 0.5);
+
 const mergeTiles = (board: BoardState) => {
   const newBoard = board.map((row) =>
     row.map((tile): TileProperties | null =>
       tile
         ? {
-            key: tile.tileOnTop
-              ? tile.key % 1 == 0
-                ? tile.key + 0.5
-                : tile.key - 0.5
-              : tile.key,
+            key: tile.tileOnTop ? togglePopKey(tile.key) : tile.key,
             tileOnTop: null,
             value: tile.tileOnTop ? tile.value + 1 : tile.value,
-            pop: !!tile.tileOnTop || tile.pop,
+            wasMerged: !!tile.tileOnTop || tile.wasMerged,
           }
         : null
     )
