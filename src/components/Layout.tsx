@@ -12,7 +12,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => (
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <main
-      className={`flex min-h-screen flex-col items-center bg-zinc-900 py-4 ${quicksand.className}`}
+      className={`flex min-h-screen flex-col items-center bg-zinc-900 py-4 text-white ${quicksand.className}`}
     >
       {children}
     </main>

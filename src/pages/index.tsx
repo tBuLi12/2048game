@@ -8,7 +8,7 @@ import Image from "next/image";
 const Card = (props: PropsWithChildren<LinkProps>) => (
   <Link
     {...props}
-    className="block flex h-16 w-48 items-center justify-center gap-4 rounded-xl bg-indigo-800 text-3xl text-white shadow-button hover:bg-indigo-900 md:h-64"
+    className="block flex h-16 w-48 items-center justify-center gap-4 rounded-xl bg-indigo-800 text-3xl shadow-button hover:bg-indigo-900 md:h-64"
   >
     {props.children}
   </Link>
@@ -17,7 +17,7 @@ const Card = (props: PropsWithChildren<LinkProps>) => (
 const Home: NextPage = () => {
   return (
     <>
-      <div className="my-24 text-8xl text-white">2048</div>
+      <div className="my-24 text-8xl">2048</div>
       <div className="flex w-full max-w-xl flex-col items-center justify-between gap-12 md:flex-row">
         <Card href="/play">
           <Image src={playIcon as string} alt="play" />
