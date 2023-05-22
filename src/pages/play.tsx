@@ -1,4 +1,4 @@
-import { type NextPage } from "next";
+import type { NextPage } from "next";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -193,7 +193,6 @@ const useBoard = (
   getInitial: () => BoardState
 ): [BoardState, (tryMove: (state: BoardState) => boolean) => void] => {
   const tileMergingTimeout = useRef<NodeJS.Timeout | null>(null);
-  const startTime = useMemo(Date.now, []);
   const [board, setBoard] = useState(getInitial);
 
   const currentBoard = useRef(board);
@@ -202,6 +201,7 @@ const useBoard = (
   // the initial board state cannot include the first tile,
   // as it's random nature interferes with SSR
   useEffect(() => {
+    const startTime = Date.now();
     let initialBoard = board;
 
     setBoard(
@@ -252,7 +252,7 @@ const useArrowHandlers = (arrows: { [eventName: string]: () => void }) => {
     const handler = (event: KeyboardEvent) => void arrows[event.key]?.();
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, []);
+  }, [arrows]);
 };
 
 function* getFreeTiles(board: BoardState) {
